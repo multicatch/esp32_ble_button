@@ -1,4 +1,13 @@
-#define DEBUG_MODE 1
+#include <BLEDevice.h>
+#include <BLEUtils.h>
+#include <BLEAdvertising.h>
+
+#define DEBUG_MODE 0
+
+#define BLE_DEV_NAME "ESP32BUT" // warning: please keep this dev name up to 8 characters, because BLE advertisement can have up to 31 bytes
+#define BLE_ADV_SEPARATOR ";"
+#define BLE_MAX_ADV_TIME 400
+#define BLE_ADV_RETRIES 3
 
 #define BTN1 GPIO_NUM_0
 #define BTN2 GPIO_NUM_1
@@ -68,11 +77,44 @@ void advertise_button_press(uint8_t wakeup_button) {
   Serial.println(wakeup_button);
   #endif
 
+  if (wakeup_button <= 0) return;
+
   for (int i = 0; i < wakeup_button; i++) {
     digitalWrite(GPIO_NUM_8, LOW);
     delay(50);
     digitalWrite(GPIO_NUM_8, HIGH);
     delay(100);
+  }
+
+  uint32_t short_id = ESP.getEfuseMac() & 0xFFF;
+  std::string dev_name = std::string(BLE_DEV_NAME) + std::to_string(short_id);
+
+  BLEDevice::init(dev_name.c_str());
+  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+  BLEAdvertisementData adv;
+  
+  std::string adv_id = std::to_string(esp_random() % 1000);
+  std::string payload = std::to_string(wakeup_button) + BLE_ADV_SEPARATOR + adv_id;
+
+  #if DEBUG_MODE
+  Serial.print("Dev name:");
+  Serial.println(dev_name.c_str());
+  Serial.print("Advertisement: ");
+  Serial.println(payload.c_str());
+  #endif
+
+  adv.setName(dev_name.c_str());
+  adv.setManufacturerData(payload.c_str());
+
+  pAdvertising->setAdvertisementData(adv);
+  pAdvertising->setMinInterval(0x20);
+  pAdvertising->setMaxInterval(0x40);
+  pAdvertising->setScanResponse(false);
+
+  for (int i = 0; i < BLE_ADV_RETRIES; i++) {
+    pAdvertising->start();
+    delay(BLE_MAX_ADV_TIME);
+    pAdvertising->stop();
   }
 }
 
