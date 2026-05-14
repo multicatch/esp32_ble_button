@@ -37,6 +37,12 @@ And that's how it works.
 
 ![Configuration is apple home](./imgs/applehome.jpeg)
 
+The latency is about 400-700ms, but the Mac hosting Homebridge is relatively far from the couch. And the Play/Pause commands are issued to the TV via HTTP.
+
+I think it's a pretty good result given the button is easier to reach, so it's much faster to press and we have a bigger time margin for latency. 
+
+And maybe if I used an IR transmitter wired to the ESP32 then the latency would be even lower, but I wanted to make the button more reliable. The IR transmitters have the disadvantage of only working when you point them in the direction of the receiver. The UX of the device would be worse. And with this setup, you can just mash the button no matter where it is or how it's pointed. Much more satistying to use.
+
 ## Demo
 
 ![Button demo](./imgs/demo.gif)
