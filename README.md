@@ -47,4 +47,6 @@ And maybe if I used an IR transmitter wired to the ESP32 then the latency would 
 
 ![Button demo](./imgs/demo.gif)
 
+## Schematics and tutorial
 
+Coming soon... 
