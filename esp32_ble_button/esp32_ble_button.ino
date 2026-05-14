@@ -79,13 +79,6 @@ void advertise_button_press(uint8_t wakeup_button) {
 
   if (wakeup_button <= 0) return;
 
-  for (int i = 0; i < wakeup_button; i++) {
-    digitalWrite(GPIO_NUM_8, LOW);
-    delay(50);
-    digitalWrite(GPIO_NUM_8, HIGH);
-    delay(100);
-  }
-
   uint32_t short_id = ESP.getEfuseMac() & 0xFFF;
   std::string dev_name = std::string(BLE_DEV_NAME) + std::to_string(short_id);
 
@@ -113,9 +106,29 @@ void advertise_button_press(uint8_t wakeup_button) {
 
   for (int i = 0; i < BLE_ADV_RETRIES; i++) {
     pAdvertising->start();
-    delay(BLE_MAX_ADV_TIME);
+    if (i == 0) {
+      int32_t blink_time = blink(wakeup_button);
+      int32_t delay_remaining = BLE_MAX_ADV_TIME - blink_time;
+      if (delay_remaining > 0) {
+        delay(delay_remaining);
+      }
+    } else {
+      delay(BLE_MAX_ADV_TIME);
+    }
     pAdvertising->stop();
   }
+}
+
+int32_t blink(uint8_t wakeup_button) {
+  int32_t delay_time = 0;
+  for (int i = 0; i < wakeup_button; i++) {
+    digitalWrite(GPIO_NUM_8, LOW);
+    delay(50);
+    digitalWrite(GPIO_NUM_8, HIGH);
+    delay(100);
+    delay_time += 150;
+  }
+  return delay_time;
 }
 
 void go_to_sleep(uint8_t wakeup_button) {
