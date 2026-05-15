@@ -47,6 +47,43 @@ And maybe if I used an IR transmitter wired to the ESP32 then the latency would 
 
 ![Button demo](./imgs/demo.gif)
 
-## Schematics and tutorial
+# How I did it
 
-Coming soon... 
+## Schematics and code explaination
+
+I used an ESP32-C3 Super Mini
+
+![ESP32-C3 Super Mini terminals](./imgs/esp32c3mini.jpeg)
+
+The circuit of the button is really simple, those are the schematics:
+
+![Schematics](./imgs/button_schematics.jpeg)
+
+**Note**: After testing the firmware, I ~~unsoldered~~ burned the PWR LED with my soldering iron ¯\\_ (ツ)_/¯. It was constantly on, even in deep sleep, so it was just wasting energy.
+
+I used **Arduino IDE** with the espresif's esp32 plugin to develop the firmware (source code located in [`esp32_ble_button`](./esp32_ble_button)).
+
+The way the firmware works: It sets the pinMode of the GPIO0 and GPIO1 to input, so I can detect when they are shorted (that means the switch is latched).
+
+Then I check what button has woken the ESP32 up. The setup method is when the ESP32 is powered up AND when it is woken up. 
+
+After determining what GPIO port caused the wakeup, I just setup a BLE advertisement (with custom **manufacturerData**) and broadcast it for 400ms x3 (that means 1200ms in total, restarting the advertisement 3 times).
+I restart the advertisement to make sure it has not hung up.
+
+The **manufacturerData** is used to broadcast the state change - when the button is down, I broadcast `1` (and a nonce), when it's up, I broadcast `2` (and a nonce).
+
+The nonce is used to prevent false presses. It basically works like this: before I start the advertisement, I generate a random number. And then append it to the **manufacturerData**. So the final *manufacturerData* looks like this:
+
+```text
+2;960
+```
+
+Why the nonce? I basically spam the air with my advertisement, because some of the communication won't reach the receiver. So the receiver will probably get about 5-20 advertisements from the button and I only want to acknowledge ONE real button press.
+
+Then the ESP32 enabled GPIO wakeup on the other GPIO port (the one that is not currently LOW, aka shorted).
+
+**Note**: You may think the GPIO wakeup is only supported with the light sleep but the ESP32-C3 is able to do deep sleep with GPIO wakeup (it lacks EXT1 wakeup though).
+
+## The Homebridge receiver
+
+Coming soon...
