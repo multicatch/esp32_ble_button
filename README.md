@@ -82,8 +82,7 @@ Why the nonce? I basically spam the air with my advertisement, because some of t
 
 Then the ESP32 enabled GPIO wakeup on the other GPIO port (the one that is not currently LOW, aka shorted).
 
-**Note**: You may think the GPIO wakeup is only supported with the light sleep but the ESP32-C3 is able to do deep sleep with GPIO wakeup (it lacks EXT1 wakeup though).
-
+**Note**: You may think the GPIO wakeup is only supported with the light sleep but the ESP32-C3 is able to do deep sleep with GPIO wakeup (it lacks EXT1 wakeup though), see [espressif's docs about this](https://docs.espressif.com/projects/esp-idf/en/stable/esp32c3/api-reference/system/sleep_modes.html#gpio-wakeup)
 ## The Homebridge receiver
 
 Coming soon...
