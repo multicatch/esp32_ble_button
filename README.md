@@ -122,4 +122,4 @@ But it would look ugly (unless I'd 3D printed some nice casing) and I don't have
 
 I've also tried using my SwitchBot Hub 2 in my automation - this Hub has IR and I can expose the IR device via Matter. This means I was able to have "Play" and "Pause" buttons exposed as a switch in Apple Home.
 
-Setting it in the ON position triggered the Hub 2 to send an IR signal for "Play", and OFF worked as IR signal for "Pause". But it was sloooow. The latency was so high. The Hub 2 needed a second to actually send the signal after getting the "set switch to ON/OFF" event. So I went back to use the HTTP API of my TV.
+Setting it in the ON position triggered the Hub 2 to send an IR signal for "Play", and OFF worked as IR signal for "Pause". But it was sloooow. The latency was so high. The Hub 2 needed a second to actually send the signal after getting the "set switch to ON/OFF" event. So I went back to using the HTTP API of my TV.
