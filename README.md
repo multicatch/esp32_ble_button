@@ -83,6 +83,43 @@ Why the nonce? I basically spam the air with my advertisement, because some of t
 Then the ESP32 enabled GPIO wakeup on the other GPIO port (the one that is not currently LOW, aka shorted).
 
 **Note**: You may think the GPIO wakeup is only supported with the light sleep but the ESP32-C3 is able to do deep sleep with GPIO wakeup (it lacks EXT1 wakeup though), see [espressif's docs about this](https://docs.espressif.com/projects/esp-idf/en/stable/esp32c3/api-reference/system/sleep_modes.html#gpio-wakeup)
+
 ## The Homebridge receiver
 
-Coming soon...
+Next problem: how to receive the BLE advertisement and how to expose this signal in my smart home?
+
+I've decided to make a Homebridge plugin, because I have some experience with Homebridge and my TV is also added to Apple Home (via a Homebridge plugin). So I wanted to just make an automation in Apple Home and call it a day.
+
+My Homebridge server is hosted on a Mac Mini Server 2011 and despite its age, it supports BLE. I've tested an npm module called [noble](https://www.npmjs.com/package/@abandonware/noble) and *it just worked*.
+
+So I've made a quick plugin (based on another Homebridge plugin made by me), and I've exposed the ESP32 as two smart buttons in Apple Home:
+
+![ESP32 as two smart buttons in Apple Home](./imgs/buttons_in_home.jpeg)
+
+The Homebridge plugin is called [homebridge-ble-adv](https://github.com/multicatch/homebridge-ble-adv) if you're interested. The configuration is really simple, you just need to provide the device name and the **manufacturerData** pattern. When this plugin detects an advertisement that matches those two values, it will send a `single click` event to Apple Home.
+
+![Configuration is apple home](./imgs/applehome.jpeg)
+
+Of course, you need to have your TV exposed as a smart device in Apple Home. If you have a Philips TV, you can also use my other plugin called [homebridge-philipstv-2020-ambilight](https://github.com/multicatch/homebridge-philipstv-2020-ambilight).
+
+## Afterthoughts
+
+I'm satisfied with the effect, the latency is actually not that bad. I believe I could also cut it down if I made a dedicated BLE receiver/IR transmitter (that would be powered by USB). 
+
+Because currently it works like this:
+
+```text
+Emergency stop button advertisement -> Mac Mini (Homebridge) -> Apple Home -> Mac Mini (Homebridge) -> TV (via HTTP API) 
+```
+
+And it could work like this:
+
+```text
+Emergency stop button adv -> ESP32 receiver (with IR) -> TV (via IR)
+```
+
+But it would look ugly (unless I'd 3D printed some nice casing) and I don't have actually the space for another cable. So it is what it is.
+
+I've also tried using my SwitchBot Hub 2 in my automation - this Hub has IR and I can expose the IR device via Matter. This means I was able to have "Play" and "Pause" buttons exposed as a switch in Apple Home.
+
+Setting it in the ON position triggered the Hub 2 to send an IR signal for "Play", and OFF worked as IR signal for "Pause". But it was sloooow. The latency was so high. The Hub 2 needed a second to actually send the signal after getting the "set switch to ON/OFF" event. So I went back to use the HTTP API of my TV.
